@@ -1,0 +1,246 @@
+<!--A base template to front_face.html, left_face.html and right_face.html-->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}{% endblock %}</title>
+
+    <style type="text/css">
+
+		#left_div{
+			float: left;
+			border-color: black;
+			border-width: 5px;
+			border-style: dotted;
+			width:40%;
+			height: 50vh;
+			margin: 3%;
+			text-align:center;
+
+		}
+		#right_div{
+			float: right;
+			border-color: black;
+			border-width: 5px;
+			border-style: dotted;
+			width:40%;
+			height: 50vh;
+			margin: 3%;
+			text-align:center;
+
+		}
+		#img_left{
+		width : auto;
+		height:auto;
+		border :10px solid
+		}
+		#picture: hover{
+			margin: 1%;
+            background-color: #0056b3;
+			text align:center;
+		}
+		#next{
+			margin: 1%;
+		}
+		#back{
+			margin: 1%;
+		}
+
+		#outer_div {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+
+#left_div, #right_div {
+    width: 40%;
+    height: 50vh;
+
+}
+
+#img_left, #img_right {
+    width: 100%;
+    height: 100%;
+    border: 1px solid black;
+	text-align:center ;
+
+}
+
+@media only screen and (max-width: 600px) {
+    #outer_div {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #left_div, #right_div {
+        width: 80%;
+        height: 50vh;
+    }
+}
+
+
+#button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    width: 100%;
+    height: auto;
+}
+
+.custom-button {
+    padding: 10px 10px;
+    color: white;
+	background-color:#0056b3 ;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    margin: 10px;
+    flex: 1;
+    max-width: 150px;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+
+@media only screen and (max-width: 600px) {
+    #button-container {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+    </style>
+  </head>
+  <body onload="onload_function();">
+    <p id="displaying_info" style="text-align:center;"></p>
+    <div id="outer_div">
+      <div id="left_div">
+        <img
+          id="img_left"
+          src="{{url_for('response_function',current=current_page)}}"
+        />
+      </div>
+      <div id="right_div">
+        <p id="para_in_right_div">Image info will be displayed here...</p>
+      </div>
+    </div>
+    <div id="button-container">
+      {% block back %}{% endblock %}
+      <button id="picture" class= "custom-button" type="button" onclick="take_picture();">Take Picture</button>
+      {% block next %}{% endblock %}
+    </div>
+    <script>
+      go_next_page = false;
+      go_previous_page = false;
+
+
+      let REGISTER = JSON.parse(localStorage.getItem("REGISTRATION"));
+      let UPDATE_DETAILS = JSON.parse(localStorage.getItem("UPDATE_NAME_AND_PASSWORD"));
+      let UPDATE_IMAGES = JSON.parse(localStorage.getItem("UPDATE_IMAGES"));
+      let TMP_IMAGES = JSON.parse(localStorage.getItem("TEMPLATE_IMAGES"));
+
+      console.log("local storage variables");
+      console.log(REGISTER);
+      console.log(UPDATE_IMAGES);
+      console.log(UPDATE_DETAILS);
+      console.log(TMP_IMAGES);
+      console.log("local storage variables");
+
+      <!--console.log(typeof {{current_page}}); gives you undefined as result. arguments passed to html files while rendering, are not strings. They were like normal variables-->
+
+      function take_picture()
+      {
+      	console.log("{{current_page}}");
+      	fetch('\/video_feed_2')
+      	.then(response => response.json())
+      	.then(data =>
+      	{
+      		TMP_IMAGES["{{current_page}}"+"_template_img"] = "data:image/jpeg;base64,"+data["template_img"];
+
+      		localStorage.setItem("TEMPLATE_IMAGES",JSON.stringify(TMP_IMAGES));
+
+      		console.log(UPDATE_IMAGES);
+      		console.log(UPDATE_DETAILS);
+      		console.log(TMP_IMAGES);
+
+      		console.log(JSON.parse(localStorage.getItem("TEMPLATE_IMAGES")));
+
+      		document.getElementById("right_div").innerHTML = '<img id = "img_right" alt = "Image Info Here" src = "" width="auto" height="100%">';
+      		document.getElementById('img_right').src = "data:image/jpeg;base64,"+data["template_img"];
+
+      		if(data["blur_img"] === "true"  )
+      		{
+      			window.alert("Blur image found...\nPlease give quality image");
+      		}
+      		else
+      		{
+      			if(data["img_encoding"] === "no face features")
+      			{
+      				alert("Face features not properly found for the detected person...\nPlease move to a brighter area and give clear image with straight positioning of head...");
+      			}
+      			else if(isNaN(data["img_encoding"]))
+      			{
+      				console.log("{{current_page}}")
+      				if(("{{current_page}}" === "front") ||("{{current_page}}" ===  "left") || ("{{current_page}}" === "right"))
+      				{
+      					REGISTER["{{ current_page }}"+"_encoding"] = data["img_encoding"];
+      <!--					REGISTER["{{ current_page }}"+"_image"] = data["img_binary"];-->
+      					localStorage.setItem("REGISTRATION",JSON.stringify(REGISTER));
+      					go_next_page = true;
+      					go_previous_page = true;
+      				}
+      				else
+      				{
+      <!--					UPDATE_IMAGES["{{current_page}}"+"_image"] =  data["img_binary"];-->
+      					UPDATE_IMAGES["{{current_page}}"+"_encoding"] = data["img_encoding"];
+      					localStorage.setItem("UPDATE_IMAGES",JSON.stringify(UPDATE_IMAGES));
+      					go_next_page = true;
+      					go_previous_page = true;
+      				}
+      			}
+      			else
+      			{
+      				window.alert(data["img_encoding"] + " faces detected")
+      			}
+      		}
+      	})
+      	.catch(error=>
+      	{
+      		console.log(error);
+      		alert(error);
+      	});
+      }
+
+      function onload_function()
+      {
+      	let DISPLAYING_INFO = document.getElementById("displaying_info");
+
+      	if("{{current_page}}".includes("update"))
+      	{
+      		DISPLAYING_INFO.innerText = "Updating "+"{{current_page}}".split("_")[0] + " image of " + JSON.parse(localStorage.getItem("UPDATE_IMAGES")).id;
+      	}
+      	else
+      	{
+      		DISPLAYING_INFO.innerText = "Registering "+"{{current_page}}" + " image of " + REGISTER.id;
+      	}
+
+      	if(JSON.parse(localStorage.getItem("TEMPLATE_IMAGES"))["{{current_page}}"+"_template_img"] !== undefined)
+      	{
+      		document.getElementById("right_div").innerHTML = '<img id = "img_right" alt = "Image Info Here" src = "" width="auto" height="100%">';
+      		document.getElementById('img_right').src = JSON.parse(localStorage.getItem("TEMPLATE_IMAGES"))["{{current_page}}"+"_template_img"];
+      		go_next_page = true;
+      		go_previous_page = true;
+      	}
+      }
+
+      {% block script %}
+      {% endblock %}
+    </script>
+  </body>
+</html>
