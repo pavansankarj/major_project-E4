@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>sign_in</title>
+    <style>
+        img {
+            width: 100%;
+            height: 100%;
+        }
+        #div_element {
+            margin: auto;
+            margin-top: 10%;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            height: 50vh;
+            border: 5px dotted black;
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .custom-button
+        {
+            padding: 10px 10px;
+            color: white;
+            background-color:#0056b3 ;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+            max-width: 150px;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        }
+    </style>
+
+  </head>
+  <body onload="setting_timeout()">
+    <div id="container" style="display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <div id="div_element">
+            <img id="img_id" src="{{url_for('response_function', current=current_page)}}">
+        </div>
+        <div class="button-container">
+            <input type="button" class ="custom-button" value="BACK" onclick="window.location.href = '{{url_for('home')}}'">
+        </div>
+    </div>
+    <script>
+      let timeout_time;
+      let start_time;
+      function setting_timeout() {
+        start_timer();
+        timeout_time = setTimeout(recognizing_details, 100);
+      }
+
+      function start_timer() {
+        start_time = new Date().getSeconds();
+      }
+
+      function recognizing_details() {
+        if (Math.abs(start_time - new Date().getSeconds()) <= 10) {
+          console.log(Math.abs(start_time - new Date().getSeconds()));
+          fetch("\/solo_recognize")
+            .then((response) => response.json())
+            .then((data) => {
+              if (data["result"] == "true") {
+                console.log(data["id"]);
+                window.location.href = "\/signed_in";
+              } else if (data["result"] == "no documents") {
+                alert("No documents were there in the database...");
+                window.location.href = "\/";
+              } else if (data["result"] == "no chromedriver") {
+                alert("Please check whether you have chromedriver along with the main python file...");
+                window.location.href = "\/";
+              } else if (data["result"] == "camera not working properly") {
+                alert("Your camera is not working properly...");
+                window.location.href = "\/";
+              } else {
+                clearTimeout(timeout_time);
+                timeout_time = setTimeout(recognizing_details, 100);
+              }
+            });
+        } else {
+          clearTimeout(timeout_time);
+          alert(
+            "We are unable to recognize you...\nCheck whether you have registered or not?\nOr please move to a bright area and put your face straight to recognize well..."
+          );
+          document.getElementById("div_element").innerHTML =
+            "<button type='button' class = 'custom-button' onclick = 'try_again_function();'>TRY AGAIN</button>";
+        }
+      }
+      function try_again_function() {
+        document.getElementById("div_element").innerHTML =
+          "<img id = 'img_id' src = '{{url_for('response_function', current = current_page)}}'>";
+        setting_timeout();
+      }
+    </script>
+  </body>
+</html>
