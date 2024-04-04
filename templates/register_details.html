@@ -1,0 +1,238 @@
+<!--A template to take ID no., name, and password and only proceeds to other page after validating the OTP-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>input</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f0f0; /* Change as needed */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        width: 100%;
+      }
+      /* Apply box-sizing to all elements */
+      * {
+        box-sizing: border-box;
+      }
+
+      /* Center the box horizontally */
+      #box {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 400px;
+        height: auto;
+        padding: 20px;
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      body {
+        background-color: rgb(140, 210, 253);
+      }
+
+      /* Style the input fields */
+      input[type="text"],
+      input[type="password"] {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+      }
+
+      /* Style the SEND OTP button */
+      input[type="button"] {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      /* Disable SEND OTP button when input fields are disabled */
+      input[type="button"]:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+
+      /* Style the OTP input field */
+      #otp {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      /* Disable OTP input field when it's not needed */
+      #otp:disabled {
+        background-color: #f2f2f2;
+        cursor: not-allowed;
+      }
+
+      /* Style the submit button */
+      input[type="submit"] {
+        width: 100%;
+        padding: 10px;
+        background-color: #4caf50;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      /* Disable submit button when it's not needed */
+      input[type="submit"]:disabled {
+        background-color: #ccc;
+        cursor: not-allowed;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="box">
+      <input
+        type="text"
+        id="ID"
+        placeholder="Enter ID"
+        required
+      />
+      <br />
+      <input type="text" id="name" placeholder="Enter Name" required />
+      <br />
+      <input
+        type="password"
+        id="passwd"
+        placeholder="Enter SMS password"
+        required
+      />
+      <input type="button" value="SEND OTP" onclick="send_otp_function();" />
+      <br />
+      <input
+        type="text"
+        id="otp"
+        placeholder="Enter OTP sent to mail"
+        required
+        disabled
+      />
+      <br />
+      <input
+        type="submit"
+        id="submit_button"
+        onclick="submit_click()"
+        disabled
+      />
+    </div>
+  <script>
+    let received_otp;
+    console.log(received_otp);
+    console.log(typeof received_otp);
+
+    localStorage.setItem("TEMPLATE_IMAGES", JSON.stringify({}));
+
+    let REGISTER = JSON.parse(localStorage.getItem("REGISTRATION"));
+
+    function send_otp_function() {
+      let ID = document.getElementById("ID").value;
+      let Name = document.getElementById("name").value;
+      let Password = document.getElementById("passwd").value;
+      fetch("\/check_collection_for_id/" + ID)
+        .then((response) => response.json())
+        .then((data) => {
+          if (data["result"] === "false") {
+            if (
+              is_valid_ID(ID) &&
+              is_valid_name(Name) &&
+              is_valid_password(Password)
+            ) {
+              console.log("In if");
+              fetch("\/send_sms/" + ID)
+                .then((response) => response.json())
+                .then((data) => {
+                  console.log(data);
+                  alert("OTP sent to your mail");
+                  console.log("from json", data["random_otp_generated"]);
+                  received_otp = data["random_otp_generated"];
+                  console.log(received_otp);
+                })
+                .catch((error) => {
+                  console.log(error);
+                  alert(error);
+                });
+              console.log("ID" + received_otp);
+              console.log(typeof received_otp);
+              document.getElementById("otp").disabled = false;
+              document.getElementById("submit_button").disabled = false;
+
+              document.getElementById("ID").disabled = true;
+              document.getElementById("name").disabled = true;
+              document.getElementById("passwd").disabled = true;
+            }
+          } else {
+            alert(
+              "Hey " +
+                ID +
+                ", your details are already there in the database..."
+            );
+          }
+        })
+        .catch((error) => alert(error));
+    }
+
+    function submit_click() {
+      console.log("In submit_click_function");
+      let success =
+        received_otp === Number(document.getElementById("otp").value);
+      if (success) {
+        localStorage.setItem("REGISTRATION", JSON.stringify(REGISTER));
+        window.location.href = "{{url_for('front')}}";
+      } else {
+        alert("Please enter valid otp");
+      }
+    }
+
+    function is_valid_ID(ID) {
+      console.log("In ID");
+      console.log(ID);
+      if (ID.length === 7 && ID.slice(0, 1) === "N" && !isNaN(ID.slice(1))) {
+        REGISTER.id = ID;
+        return true;
+      } else {
+        window.alert("Please give proper ID...!");
+        return false;
+      }
+    }
+
+    function is_valid_password(password) {
+      if (Boolean(password)) {
+        REGISTER.password = password;
+        return true;
+      } else {
+        alert("Please enter your Password...!");
+        return false;
+      }
+    }
+
+    function is_valid_name(name) {
+      if (Boolean(name)) {
+        REGISTER.name = name;
+        return true;
+      } else {
+        alert("Please enter your Name...!");
+        return false;
+      }
+    }
+  </script>
+  </body>
+</html>
