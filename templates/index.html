@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+    <head>
+        <meta charset="UTF-8">
+        <title>index_page</title>
+        <style>
+
+            /* General styles */
+            div {
+                border: 2px solid green;
+                text-align: center;
+            }
+            button {
+                margin: 2%;
+                padding: 10px 20px; /* Adjust button padding */
+                background-color:#007bff;
+                border-radius:10px;
+                border:None;
+            }
+
+            /* Responsive styles */
+            @media screen and (max-width: 600px) {
+                div {
+                    padding: 10px; /* Adjust padding for smaller screens */
+                }
+                button {
+                    margin: 5px; /* Adjust margin for smaller screens */
+                    padding: 8px 16px; /* Adjust padding for smaller screens */
+                }
+            }
+            body{
+                background-color:rgb(140, 210, 253);
+            }
+            div{
+                background-color:white;
+                border : 2px solid black;
+                text-align : center;
+            }
+
+        </style>
+    </head>
+    <body>
+        <p style="text-align:center; font-weight:bold;">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    {% for i in messages %}
+                        {{i}}
+                    {% endfor %}
+                {% endif %}
+            {%endwith%}
+        </p>
+        <div id = "outer_div">
+            <button onclick="window.location.href = '{{url_for('register_details')}}';">Register</button></br>
+            <button onclick="window.location.href = '{{url_for('sign_in_solo')}}';">Sign in</button></br>
+            <button onclick="window.location.href = '{{url_for('what_update')}}'">Update</button>
+        </div>
+
+        <script>
+
+            localStorage.setItem("REGISTRATION", JSON.stringify({}));
+            localStorage.setItem("UPDATE_NAME_AND_PASSWORD", JSON.stringify({}));
+            localStorage.setItem("UPDATE_IMAGES",JSON.stringify({}));
+
+        </script>
+    </body>
+</html>
