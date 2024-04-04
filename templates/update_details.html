@@ -1,0 +1,180 @@
+<!--A template to update name, and password for the given ID no.-->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Update_Details</title>
+
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background-color: rgb(140, 210, 253);
+      }
+
+      #box {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 300px;
+        padding: 20px;
+        background-color: white;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      input[type="text"],
+      input[type="password"],
+      input[type="button"],
+      input[type="submit"] {
+        width: calc(100% - 20px); /* Adjust width for padding */
+        margin-bottom: 10px;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box; /* Ensure padding and border are included in element's total width */
+      }
+
+      input[type="text"]:focus,
+      input[type="password"]:focus {
+        outline: none;
+        border-color: #007bff; /* Change border color on focus */
+      }
+
+      input[type="button"],
+      input[type="submit"] {
+        background-color: #007bff;
+        color: #fff;
+        cursor: pointer;
+      }
+
+      input[type="button"]:hover,
+      input[type="submit"]:hover {
+        background-color: #0056b3; /* Darker shade of primary color on hover */
+      }
+
+      input[type="button"]:disabled,
+      input[type="submit"]:disabled {
+        background-color: #0056b3;
+        cursor: not-allowed;
+      }
+
+      #ID:disabled {
+        background-color: #f0f0f0; /* Change background color of disabled input */
+      }
+
+      /* Responsive styles */
+      @media screen and (max-width: 600px) {
+        #box {
+          width: 90%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="box">
+      <p style="text-align: center">Updating details of {{updating_id}}</p>
+      <input type="text" value="{{updating_id}}" id="ID" disabled />
+      <br />
+      <input
+        type="text"
+        id="name"
+        placeholder="Enter Name"
+        required
+      />
+      <br />
+      <input
+        type="password"
+        id="passwd"
+        placeholder="Enter SMS password"
+        required
+      />
+      <br />
+      <input
+        type="button"
+        value="BACK"
+        id="back_button"
+        onclick="back_page_function()"
+      />
+      <input
+        type="submit"
+        value="UPDATE"
+        id="update_button"
+        onclick="update_click()"
+      />
+    </div>
+  </body>
+  <script>
+    let received_otp;
+    console.log(received_otp)
+    console.log(typeof received_otp)
+
+    let UPDATE_DETAILS = JSON.parse(localStorage.getItem("UPDATE_NAME_AND_PASSWORD"));
+
+    function back_page_function()
+    {
+        window.location.href = '\/what_update'
+    }
+
+    function update_click(){
+        console.log("In update_click_function")
+        let ID = document.getElementById('ID').value;
+        let Name = document.getElementById('name').value;
+        let Password = document.getElementById('passwd').value;
+
+        if(is_valid_password(Password) && is_valid_name(Name))
+        {
+            localStorage.setItem("UPDATE_NAME_AND_PASSWORD",JSON.stringify(UPDATE_DETAILS))
+            fetch('\/database_details_updation/'+localStorage.getItem("UPDATE_NAME_AND_PASSWORD"))
+            .then(response => response.json())
+            .then(data =>
+            {
+                if(data["result"] === "true")
+                {
+                    localStorage.removeItem("UPDATE_NAME_AND_PASSWORD");
+                    window.location.href = '\/updated_details';
+                }
+                else
+                {
+                    alert("There is a problem in updating the database...")
+                }
+            })
+            .catch(error=> {
+                console.log(error);
+                alert(error);
+            });
+        }
+    }
+
+    function is_valid_password(password)
+    {
+        if(Boolean(password))
+        {
+            UPDATE_DETAILS.password = password;
+            return true;
+        }
+        else
+        {
+            alert("Please enter your Password...!");
+            return false;
+        }
+    }
+
+    function is_valid_name(name)
+    {
+        if(Boolean(name))
+        {
+            UPDATE_DETAILS.name = name;
+            return true;
+        }
+        else
+        {
+            alert("Please enter your Name...!");
+            return false;
+        }
+    }
+  </script>
+</html>
