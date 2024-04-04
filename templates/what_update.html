@@ -1,0 +1,211 @@
+<!--A template to question user that what does he need to update? - whether it is images i.e., encodings or name and password-->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Updation</title>
+
+    <style>
+      /* CSS styles go here */
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f0f0; /* Change as needed */
+        display: flex;
+        justify-content: center;
+        background-color: rgb(140, 210, 253);
+        align-items: center;
+        height: 100vh;
+      }
+
+      #box {
+        width: 400px; /* Adjust width as needed */
+        padding: 20px;
+        background-color: white;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      input[type="text"],
+      input[type="button"],
+      input[type="submit"] {
+        margin-bottom: 10px;
+        padding: 10px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
+      label {
+        margin-bottom: 5px;
+        display: inline-flex; /* Display labels and radio buttons in same line */
+        align-items: center; /* Align items vertically */
+        flex-wrap: wrap; /* Allow wrapping */
+      }
+
+      input[type="radio"] {
+        margin-right: 10px;
+        transform: scale(1.5); /* Increase radio size */
+      }
+
+      input:disabled {
+        opacity: 0.5;
+      }
+
+      #otp {
+        margin-bottom: 20px;
+      }
+
+      .radio-group {
+        margin-bottom: 10px;
+      }
+
+      @media only screen and (max-width: 600px) {
+        #box {
+          width: 90%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="box">
+      <input
+        type="text"
+        id="ID"
+        placeholder="Enter ID"
+        required
+      />
+
+      <input type="button" value="SEND OTP" onclick="send_otp_function();" />
+      <br />
+      <input
+        type="text"
+        id="otp"
+        placeholder="Enter OTP sent to mail"
+        required
+        disabled
+      />
+      <input type="button" value="VERIFY" onclick="check_otp_function();" />
+      <br />
+      <input type="radio" id="name_and_password" name="updates" disabled />
+      <label for="name_and_password">Update Name and Password</label>
+      <input type="radio" id="images_update" name="updates" disabled />
+      <label for="images_update">Update images</label>
+
+      <input
+        type="submit"
+        id="submit_button"
+        onclick="submit_click()"
+        disabled
+      />
+    </div>
+    <script>
+      let ID_IN_COLLECTION;
+      console.log(ID_IN_COLLECTION);
+      console.log(ID_IN_COLLECTION);
+
+      let received_otp;
+
+      localStorage.setItem("TEMPLATE_IMAGES", JSON.stringify({}));
+
+      let UPDATE_DETAILS = JSON.parse(
+        localStorage.getItem("UPDATE_NAME_AND_PASSWORD")
+      );
+      let UPDATE_IMAGES = JSON.parse(localStorage.getItem("UPDATE_IMAGES"));
+
+      let ID = document.getElementById("ID");
+      let OTP = document.getElementById("otp");
+      let NAME_AND_PASSWORD = document.getElementById("name_and_password");
+      let IMAGES_UPDATE = document.getElementById("images_update");
+      let SUBMIT_BUTTON = document.getElementById("submit_button");
+
+      function send_otp_function() {
+        if (is_valid_ID(ID.value)) {
+          console.log("Verifying OTP");
+          console.log(ID.value);
+          console.log(UPDATE_IMAGES);
+          console.log(UPDATE_DETAILS);
+          let ID_value = ID.value;
+          fetch("\/check_collection_for_id/" + ID_value)
+            .then((response) => response.json())
+            .then((data) => {
+              if (data["result"] === "true") {
+                OTP.disabled = false;
+                ID.disabled = true;
+
+                fetch("\/send_sms/" + ID_value)
+                  .then((response) => response.json())
+                  .then((data) => {
+                    alert("OTP sent to your mail");
+                    console.log("from json", data["random_otp_generated"]);
+                    received_otp = data["random_otp_generated"];
+                    console.log(received_otp);
+                  })
+                  .catch((error) => alert(error));
+              } else {
+                alert(
+                  "Hey " +
+                    ID.value +
+                    ", your details are not there in the database. Please register first..."
+                );
+              }
+            })
+            .catch((error) => alert(error));
+          console.log("In if");
+          console.log("ID" + received_otp);
+          console.log(typeof received_otp);
+        }
+      }
+
+      function submit_click() {
+        if (NAME_AND_PASSWORD.checked) {
+          let ID_value = ID.value;
+          console.log(ID_value);
+          console.log(ID_value);
+          console.log(UPDATE_DETAILS);
+          localStorage.setItem(
+            "UPDATE_NAME_AND_PASSWORD",
+            JSON.stringify(UPDATE_DETAILS)
+          );
+          window.location.href = "\/update_details/" + ID_value;
+        } else if (IMAGES_UPDATE.checked) {
+          console.log(UPDATE_IMAGES);
+
+          localStorage.setItem("UPDATE_IMAGES", JSON.stringify(UPDATE_IMAGES));
+          window.location.href = "\/front/update";
+        } else {
+          alert("Please choose any of the option...");
+        }
+      }
+      function check_otp_function() {
+        console.log("check_otp_function");
+
+        if (received_otp === Number(OTP.value)) {
+          UPDATE_DETAILS.id = ID.value;
+          UPDATE_IMAGES.id = ID.value;
+          OTP.disabled = true;
+          NAME_AND_PASSWORD.disabled = false;
+          IMAGES_UPDATE.disabled = false;
+          SUBMIT_BUTTON.disabled = false;
+        } else {
+          alert("Please enter valid otp");
+        }
+      }
+
+      function is_valid_ID(checking_ID) {
+        console.log("checking_ID");
+        if (
+          checking_ID.length === 7 &&
+          checking_ID.slice(0, 1) === "N" &&
+          !isNaN(checking_ID.slice(1))
+        ) {
+          return true;
+        } else {
+          window.alert("Please give proper ID...!");
+          return false;
+        }
+      }
+    </script>
+  </body>
+</html>
