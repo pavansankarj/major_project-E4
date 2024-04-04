@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>solo_or_crowd</title>
+</head>
+<body>
+<input type = "radio" id = "solo" name = "solo_or_crowd">
+<label for = "solo" >Are you solo?</label>
+<input type = "radio" id = "crowd" name = "solo_or_crowd">
+<label for = "crowd" >Are you in the crowd?</label>
+<input type="button" id = "submit" value = "SUBMIT" onclick="submit_function();">
+</body>
+<script>
+    function submit_function()
+    {
+        if(document.getElementById("solo").checked)
+        {
+            window.location.href = "{{url_for('sign_in_solo')}}";
+        }
+        else if(document.getElementById("crowd").checked)
+        {
+            let recognized_IDs_set = new Set();
+<!--            console.log(type(recognized_IDs_set))-->
+<!--            console.log(typeof JSON.parse(localStorage.getItem("RECOGNIZED_IDs")));-->
+            console.log(typeof localStorage.getItem("RECOGNIZED_IDs"));
+            localStorage.setItem("RECOGNIZED_IDs", JSON.stringify(recognized_IDs_set));
+
+            window.location.href = "{{url_for('sign_in_crowd')}}";
+        }
+        else
+        {
+            alert("Please choose any of the radio button")
+        }
+    }
+</script>
+</html>

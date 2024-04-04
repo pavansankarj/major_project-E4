@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>recognized_IDs</title>
+</head>
+<body onload="load_funciton();" id="body">
+
+</body>
+<script>
+    function load_function()
+    {
+        let body = document.getElementById("body");
+        let recognized_IDs_set = JSON.parse(localStorage.getItem("RECOGNIZED_IDs"));
+        recognized_IDs_set.forEach(radio_button_creation)
+        body.innerHTML += "<input type='button' id = 'submit_button' onclick='submit_click()' disabled>;
+    }
+    function radio_button_creation(value)
+    {
+        body.innerHTML += "<input type='radio' id=value name='options' onclick='submit_activate()'>";
+    }
+    function submit_activate()
+    {
+        document.getElementById('submit_button').disabled = false
+    }
+    function submit_click()
+    {
+        for(let i of recognized_IDs_set)
+        {
+            if(document.getElementById(i).checked)
+            {
+                fetch('\/send_sms_confirmation/'+i)
+                .then(response => response.json())
+                .then(data =>
+                {
+                    let entered_otp = prompt("OTP sent to your mail");
+                    console.log("from json",data["random_otp_generated"]);
+                    if(data["random_otp_generated"] == entered_otp)
+                    {
+                        fetch("/fetch_data/"+i)
+                        .then(response => response.json())
+                        .then(data =>
+                        {
+                            if(data["result"] === "true")
+                            {
+                                localStorage.removeItem("RECOGNIZED_IDs");
+                                window.location.href = "\/";
+                            }
+                            else
+                            {
+                                alert("chromedriver is not there along with the main file")
+                            }
+                        })
+                        .catch(error => console.log(error))
+                    }
+                    else
+                    {
+                        alert("Enter valid OTP")
+                    }
+                })
+                .catch(error => alert(error));
+
+            }
+        }
+
+    }
+</script>
+</html>

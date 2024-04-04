@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>sign_in</title>
+    <style>
+        img{
+          width:100%;
+          height:auto;
+        }
+        div{
+        margin: auto;
+        margin-top: 10%;
+        width : 34.85%;
+        text-align : center;
+        height : 50vh;
+        border: 5px dotted black;
+    <!--    display : inline-block;-->
+        }
+    </style>
+</head>
+<body onload="setting_timeout();">
+    <div id = "div_element">
+        <img id = "img_id" src = "{{url_for('response_function', current = current_page)}}">
+    </div>
+<script>
+
+let timeout_time;
+let start_time;
+let recognized_IDs_set = JSON.parse(localStorage.getItem("RECOGNIZED_IDs"));
+console.log(recognized_IDs_set);
+console.log("type of recognized_ids", typeof recognized_IDs_set);
+
+function setting_timeout()
+{
+    start_timer();
+    timeout_time = setTimeout(recognizing_details,100);
+}
+
+function start_timer()
+{
+    start_time = new Date().getSeconds();
+}
+
+function recognizing_details()
+{
+    if(Math.abs(start_time - new Date().getSeconds()) <= 10)
+    {
+        console.log(Math.abs(start_time - new Date().getSeconds()))
+        fetch('\/crowd_recognize')
+        .then(response => response.json())
+        .then(data =>
+        {
+            if(data["result"] === "true")
+            {
+                console.log(data["recognized_IDs"][0]);
+                console.log(typeof data["recognized_IDs"][0]);
+                timeout_time = setTimeout(recognizing_details,100);
+                for(let i=0;i<data["recognized_IDs"].length;i++)
+                {
+                    recognized_IDs_set.add((data["recognized_IDs"])[i])
+                }
+<!--                window.location.href = '\/';-->
+            }
+            else
+            {
+                    clearTimeout(timeout_time);
+                    timeout_time = setTimeout(recognizing_details,100);
+            }
+
+        })
+    }
+    else
+    {
+        clearTimeout(timeout_time);
+        localStorage.setItem("RECOGNIZED_IDs", JSON.stringify(recognized_IDs_set));
+        if(recognized_IDs_set.length === 0)
+        {
+            document.getElementById("div_element").innerHTML = "<button type='button' onclick = 'try_again_function();'>TRY AGAIN</button>";
+        }
+        else if(recognized_IDs_set.length === 1)
+        {
+            let ID = [...recognized_IDs_set][0]
+            fetch("/fetch_data/"+ID)
+            .then(response => response.json())
+            .then(data =>
+            {
+                if(data["result"] === "true")
+                {
+                    localStorage.removeItem("RECOGNIZED_IDs");
+                    window.location.href = "\/";
+                }
+                else
+                {
+                    alert("chromedriver is not there along with the main file")
+                }
+            })
+            .catch(error => console.log(error))
+        }
+        else if(recognized_IDs_set.length > 1)
+        {
+            window.location.href = "\/recognized_IDs"
+        }
+    }
+}
+function try_again_function()
+{
+    document.getElementById("div_element").innerHTML = "<img id = 'img_id' src = '{{url_for('response_function', current = current_page)}}'>"
+    setting_timeout();
+}
+
+</script>
+
+</body>
+</html>
