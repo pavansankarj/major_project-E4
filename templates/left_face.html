@@ -1,0 +1,37 @@
+<!--A template to take left image or sample_image_2 from which we calculate left encoding-->
+
+{%extends "base.html" %}
+{%block title%}left_face{%endblock%}
+
+{% block back %}<button id="back" class="custom-button" type="button" onclick = "back_page_function();" >Back</button>{% endblock %}
+{% block next %}<button id="next" class="custom-button" type="button" onclick = "next_page_function();">Next</button>{% endblock %}
+{% block script %}
+function next_page_function()
+{
+    if(("{{current_page}}" === "left") && go_next_page)
+    {
+        window.location.href = '{{(url_for('right'))}}';
+    }
+    else if(!go_next_page)
+    {
+        window.alert("Give proper image with single clear face");
+    }
+    else
+    {
+        window.location.href = '/right/update';
+    }
+
+}
+function back_page_function()
+{
+
+    if("{{current_page}}" === "left")
+    {
+        window.location.href = '{{(url_for('front'))}}';
+    }
+    else
+    {
+    	window.location.href = '/front/update';
+    }
+}
+{% endblock %}

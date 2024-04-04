@@ -1,0 +1,39 @@
+<!--A template to take front image or sample_image_1 from which we calculate front encoding-->
+
+{%extends "base.html" %}
+{%block title%}front_face{%endblock%}
+
+{% block back %}<button id="back" class="custom-button" type="button" onclick = "back_page_function();" >Back</button>{% endblock %}
+{% block next %}<button id="next" class="custom-button" type="button" onclick = "next_page_function();">Next</button>{% endblock %}
+{% block script %}
+
+
+function next_page_function()
+{
+    if(("{{current_page}}" === "front") && go_next_page)
+    {
+        window.location.href = '{{(url_for('left'))}}';
+    }
+    else if(!go_next_page)
+    {
+        window.alert("Give proper image with single clear face");
+    }
+    else
+    {
+        window.location.href = '/left/update';
+    }
+}
+
+function back_page_function()
+{
+    if(("{{current_page}}" === "front"))
+    {
+        window.location.href = '{{(url_for('register_details'))}}';
+    }
+    else
+    {
+    	window.location.href = '{{(url_for('what_update'))}}';
+    }
+}
+
+{% endblock %}
